@@ -47,3 +47,33 @@ export const ItemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
           const parsedBody = JSON.parse(body);
           const { name, quantity, category, notes, isPurchased } = parsedBody;
 
+          // Validation logic: Notes and isPurchased are optional, rest are required.
+          const missingFields: string[] = [];
+          if (!name || typeof name !== 'string' || !name.trim()) missingFields.push('name (non-empty string)');
+          if (quantity === undefined || typeof quantity !== 'number') missingFields.push('quantity (number)');
+          if (!category || typeof category !== 'string' || !category.trim()) missingFields.push('category (non-empty string)');
+          
+
+          if (missingFields.length > 0) {
+            return sendResponse(400, { 
+              error: "Validation failed", 
+              message: `The following fields are required or invalid: ${missingFields.join(', ')}`,
+              hint: "Only 'notes' and 'isPurchased' are optional." 
+            });
+          }
+
+          const newItem = addItem(name, quantity, category, notes || '', isPurchased);
+
+          return sendResponse(201, {
+            message: `Success: Added '${name}' to the list.`,
+            item: newItem
+          });
+
+        } catch (error) {
+          return sendResponse(400, { error: "Malformed payload. Invalid JSON structure." });
+        }
+      });
+      return;
+    }
+
+   
