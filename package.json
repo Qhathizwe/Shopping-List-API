@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
 "scripts": {
-  "dev": "nodemon --exec tsx src/server.ts"
+  "dev": "nodemon --exec ts src/server.ts"
   },
   "keywords": [],
   "author": "",
