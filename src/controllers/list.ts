@@ -25,3 +25,15 @@ export const deleteItemById = (id: number): listItem | undefined => {
     const [removed] = List.splice(index, 1)
     return removed
 }
+export const updateItem = (id: number, updatedFields: Partial<listItem>): listItem | undefined => {
+    const item = List.find((item) => item.id === id)
+    if (!item) return undefined
+
+    if (updatedFields.name !== undefined) item.name = updatedFields.name;
+    if (updatedFields.quantity !== undefined) item.quantity = updatedFields.quantity;
+    if (updatedFields.category !== undefined) item.category = updatedFields.category;
+    if (updatedFields.notes !== undefined) item.notes = updatedFields.notes;
+    if (updatedFields.isPurchased !== undefined) item.isPurchased = updatedFields.isPurchased;
+
+    return item
+}
