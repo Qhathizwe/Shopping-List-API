@@ -3,7 +3,7 @@ export interface listItem {
     name: string;
     quantity: number;
     category: string;
-    notes: string;
+    note: string;
     isPurchased: boolean;
 }
 
