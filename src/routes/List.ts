@@ -48,7 +48,7 @@ export const ItemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
           const parsedBody = JSON.parse(body);
           const { name, quantity, category, notes, isPurchased } = parsedBody;
 
-          // Validation logic: Notes and isPurchased are optional, rest are required
+          // Validation logic: Notes and isPurchased are optional, rest are required.
           const missingFields: string[] = [];
           if (!name || typeof name !== 'string' || !name.trim()) missingFields.push('name (non-empty string)');
           if (quantity === undefined || typeof quantity !== 'number') missingFields.push('quantity (number)');
