@@ -13,8 +13,8 @@ export const getItemById = (id: number): listItem | undefined => {
     return list;
 }
 
-export const addItem = (name: string, quantity: number, category: string, notes: string): listItem => {
-    const newItem: listItem = { id: currentId++, name, quantity, category, notes, isPurchased: false };
+export const addItem = (name: string, quantity: number, category: string, notes: string, isPurchased: boolean): listItem => {
+    const newItem: listItem = { id: currentId++, name, quantity, category, notes, isPurchased };
     List.push(newItem);
     return newItem;
 }
