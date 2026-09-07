@@ -98,5 +98,5 @@ export const ItemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
         message: `Success: Removed '${targetItem.name}' from your shopping list.`
       });
     }
-
- 
+  }
+}
