@@ -31,4 +31,19 @@ export const ItemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
       return sendResponse(200, item);
     }
 
-   
+   // 3. POST - ADD NEW ITEM
+    if (req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk.toString();
+      });
+
+      req.on('end', () => {
+        try {
+          if (!body.trim()) {
+            return sendResponse(400, { error: "Request body cannot be empty" });
+          }
+
+          const parsedBody = JSON.parse(body);
+          const { name, quantity, category, notes, isPurchased } = parsedBody;
+
