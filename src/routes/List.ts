@@ -76,4 +76,10 @@ export const ItemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
       return;
     }
 
-   
+    // 4. DELETE ITEM BY ID (Now returns notification)
+    if (req.method === "DELETE" && id) {
+      if (isNaN(id)) {
+        return sendResponse(400, { error: "Invalid item Id" });
+      }
+
+     
