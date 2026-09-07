@@ -19,5 +19,16 @@ export const ItemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
       const list = getList();
       return sendResponse(200, list);
     }
+  // 2. GET SINGLE ITEM BY ID
+    if (req.method === 'GET' && id) {
+      if (isNaN(id)) {
+        return sendResponse(400, { error: "Invalid item Id format" });
+      }
+      const item = getItemById(id);
+      if (!item) {
+        return sendResponse(404, { message: 'Item not found' });
+      }
+      return sendResponse(200, item);
+    }
 
-  
+   
