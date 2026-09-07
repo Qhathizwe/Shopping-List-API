@@ -82,4 +82,21 @@ export const ItemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
         return sendResponse(400, { error: "Invalid item Id" });
       }
 
-     
+ // Fetch item first to know its name for the confirmation message
+      const targetItem = getItemById(id);
+      if (!targetItem) {
+        return sendResponse(404, { error: "Item not found" });
+      }
+
+      const deleted = deleteItemById(id);
+      if (!deleted) {
+        return sendResponse(404, { error: "Item could not be deleted" });
+      }
+
+      //Successful deletion, return a message with the name of the deleted item
+      return sendResponse(200, {
+        message: `Success: Removed '${targetItem.name}' from your shopping list.`
+      });
+    }
+
+ 
