@@ -1,3 +1,4 @@
+<img src="https://socialify.git.ci/Qhathizwe/Shopping-List-API/image?language=1&name=1&owner=1&stargazers=1&theme=Auto" alt="Shopping-List-API" width="640" height="320" />
 # 🛒 Shopping List API
 
 A lightweight, native **Node.js** and **TypeScript** REST API for managing a shopping list. Built completely from scratch without external framework dependencies like Express, using native HTTP modules.
