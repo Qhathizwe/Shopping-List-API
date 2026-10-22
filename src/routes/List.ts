@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from "http"; 
+import { IncomingMessage, ServerResponse } from "http";
 import { getList, getItemById, addItem, deleteItemById, updateItem } from '../controllers/list.js';
 
 export const ItemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
@@ -19,7 +19,8 @@ export const ItemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
       const list = getList();
       return sendResponse(200, list);
     }
-  // 2. GET SINGLE ITEM BY ID
+
+    // 2. GET SINGLE ITEM BY ID
     if (req.method === 'GET' && id) {
       if (isNaN(id)) {
         return sendResponse(400, { error: "Invalid item Id format" });
@@ -31,8 +32,68 @@ export const ItemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
       return sendResponse(200, item);
     }
 
-   // 3. POST - ADD NEW ITEM
+    // 3. POST - ADD NEW ITEM
     if (req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk.toString();
+      });
+      req.on('end', () => {
+        try {
+          if (!body.trim()) {
+            return sendResponse(400, { error: "Request body cannot be empty" });
+          }
+          const parsedBody = JSON.parse(body);
+          const { name, quantity, category, notes, isPurchased } = parsedBody;
+
+          // Validation logic: Notes and isPurchased are optional, rest are required.
+          const missingFields: string[] = [];
+          if (!name || typeof name !== 'string' || !name.trim()) missingFields.push('name (non-empty string)');
+          if (quantity === undefined || typeof quantity !== 'number') missingFields.push('quantity (number)');
+          if (!category || typeof category !== 'string' || !category.trim()) missingFields.push('category (non-empty string)');
+
+          if (missingFields.length > 0) {
+            return sendResponse(400, { 
+              error: "Validation failed", 
+              message: `The following fields are required or invalid: ${missingFields.join(', ')}`, 
+              hint: "Only 'notes' and 'isPurchased' are optional." 
+            });
+          }
+
+          const newItem = addItem(name, quantity, category, notes || '', isPurchased ?? false);
+          return sendResponse(201, { message: `Success: Added '${name}' to the list.`, item: newItem });
+        } catch (error) {
+          return sendResponse(400, { error: "Malformed payload. Invalid JSON structure." });
+        }
+      });
+      return;
+    }
+
+    // 4. DELETE ITEM BY ID
+    if (req.method === "DELETE" && id) {
+      if (isNaN(id)) {
+        return sendResponse(400, { error: "Invalid item Id" });
+      }
+
+      const targetItem = getItemById(id);
+      if (!targetItem) {
+        return sendResponse(404, { error: "Item not found" });
+      }
+
+      const deleted = deleteItemById(id);
+      if (!deleted) {
+        return sendResponse(404, { error: "Item could not be deleted" });
+      }
+
+      return sendResponse(200, { message: `Success: Removed '${targetItem.name}' from your shopping list.` });
+    }
+
+    // 5. PUT - UPDATE ITEM BY ID
+    if (req.method === 'PUT' && id) {
+      if (isNaN(id)) {
+        return sendResponse(400, { error: "Invalid item Id format" });
+      }
+
       let body = '';
       req.on('data', (chunk) => {
         body += chunk.toString();
@@ -45,58 +106,26 @@ export const ItemsRoute = async (req: IncomingMessage, res: ServerResponse) => {
           }
 
           const parsedBody = JSON.parse(body);
-          const { name, quantity, category, notes, isPurchased } = parsedBody;
-
-          // Validation logic: Notes and isPurchased are optional, rest are required.
-          const missingFields: string[] = [];
-          if (!name || typeof name !== 'string' || !name.trim()) missingFields.push('name (non-empty string)');
-          if (quantity === undefined || typeof quantity !== 'number') missingFields.push('quantity (number)');
-          if (!category || typeof category !== 'string' || !category.trim()) missingFields.push('category (non-empty string)');
           
+          // Execute the controller update
+          const updatedItem = updateItem(id, parsedBody);
 
-          if (missingFields.length > 0) {
-            return sendResponse(400, { 
-              error: "Validation failed", 
-              message: `The following fields are required or invalid: ${missingFields.join(', ')}`,
-              hint: "Only 'notes' and 'isPurchased' are optional." 
-            });
+          if (!updatedItem) {
+            return sendResponse(404, { error: 'Item not found' });
           }
 
-          const newItem = addItem(name, quantity, category, notes || '', isPurchased);
-
-          return sendResponse(201, {
-            message: `Success: Added '${name}' to the list.`,
-            item: newItem
+          return sendResponse(200, { 
+            message: `Success: Updated '${updatedItem.name}'.`, 
+            item: updatedItem 
           });
-
         } catch (error) {
           return sendResponse(400, { error: "Malformed payload. Invalid JSON structure." });
         }
       });
       return;
     }
-
-    // 4. DELETE ITEM BY ID (Now returns notification)
-    if (req.method === "DELETE" && id) {
-      if (isNaN(id)) {
-        return sendResponse(400, { error: "Invalid item Id" });
-      }
-
- // Fetch item first to know its name for the confirmation message
-      const targetItem = getItemById(id);
-      if (!targetItem) {
-        return sendResponse(404, { error: "Item not found" });
-      }
-
-      const deleted = deleteItemById(id);
-      if (!deleted) {
-        return sendResponse(404, { error: "Item could not be deleted" });
-      }
-
-      //Successful deletion, return a message with the name of the deleted item
-      return sendResponse(200, {
-        message: `Success: Removed '${targetItem.name}' from your shopping list.`
-      });
-    }
+    
+    // Catch-all for unsupported methods on /items (e.g., PATCH)
+    return sendResponse(405, { error: "Method not allowed on this path" });
   }
-}
+};
